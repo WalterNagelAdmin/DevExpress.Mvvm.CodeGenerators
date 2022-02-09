@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -54,6 +54,7 @@ using System.ComponentModel;";
                 switch(actualMvvm) {
                     case SupportedMvvm.Dx:
                         source.AppendLine("using DevExpress.Mvvm;");
+                        source.AppendLine("using Microsoft.UI.Dispatching;");
                         break;
                     case SupportedMvvm.Prism:
                         source.AppendLine("using System;").AppendLine("using Prism;").AppendLine("using Prism.Commands;");
@@ -97,7 +98,7 @@ using System.ComponentModel;";
                 } else
                     source.AppendLine(" {");
                 source = source.Tab;
-                const string protectedModifier = "protected ";
+                const string protectedModifier = "";
                 bool isSealed = classSymbol.IsSealed;
                 if(!string.IsNullOrEmpty(raiseChangedMethod))
                     source.AppendIf(!isSealed, protectedModifier)

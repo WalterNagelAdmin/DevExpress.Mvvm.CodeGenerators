@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using System;
 using System.Linq;
 
@@ -18,7 +18,6 @@ namespace DevExpress.Mvvm.CodeGenerators {
                          symbol => AttributeHelper.HasAttribute(symbol, info.GetFrameworkAttributes(mvvm).ViewModelAttributeSymbol),
                          "RaisePropertyChanged",
                          "System.ComponentModel.PropertyChangedEventArgs",
-                         "void RaisePropertyChanged(PropertyChangedEventArgs e) => PropertyChanged?.Invoke(this, e);");
                          @"/// <summary>
 /// Used to execute code in GUI Thread
 /// </summary>
@@ -37,7 +36,6 @@ protected void RaisePropertyChanged(PropertyChangedEventArgs e) => _ = dispatche
                                    AttributeHelper.GetPropertyActualValue(symbol, info.GetFrameworkAttributes(mvvm).ViewModelAttributeSymbol, AttributesGenerator.ImplementINPCing, false),
                          "RaisePropertyChanging",
                          "System.ComponentModel.PropertyChangingEventArgs",
-                         "void RaisePropertyChanging(PropertyChangingEventArgs e) => PropertyChanging?.Invoke(this, e);");
                          @"/// <summary>
 /// Used to execute code in GUI Thread
 /// </summary>
