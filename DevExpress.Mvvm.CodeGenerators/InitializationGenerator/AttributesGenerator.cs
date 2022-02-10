@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace DevExpress.Mvvm.CodeGenerators {
     public static class AttributesGenerator {
@@ -12,6 +12,7 @@ namespace DevExpress.Mvvm.CodeGenerators {
         public const string ImplementISS = "ImplementISupportServices";
         public const string ImplementIAA = "ImplementIActiveAware";
         public const string ImplementICU = "ImplementICleanup";
+        public const string ImplementDQ = "ImplementDispatcherQueue";
 
         public const string IsVirtual = "IsVirtual";
         public const string OnChangedMethod = "OnChangedMethod";
@@ -65,6 +66,8 @@ namespace DevExpress.Mvvm.CodeGenerators {
         ///     mechanism to your View Model.
         /// </summary>
         public bool ImplementISupportServices { get; set; }
+
+        public bool ImplementDispatcherQueue { get; set; }
     }
 
     /// <summary>
@@ -176,6 +179,8 @@ namespace DevExpress.Mvvm.CodeGenerators {
         ///     mechanism to your View Model.
         /// </summary>
         public bool ImplementISupportServices { get; set; }
+
+        public bool ImplementDispatcherQueue { get; set; }
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -9,6 +9,7 @@ namespace DevExpress.Mvvm.CodeGenerators {
         static readonly string nameofImplementISPVM = AttributesGenerator.ImplementISPVM;
         static readonly string nameofImplementIAA = AttributesGenerator.ImplementIAA;
         static readonly string nameofImplementICU = AttributesGenerator.ImplementICU;
+        static readonly string nameofImplementDQ = AttributesGenerator.ImplementDQ;
 
         public static bool GetImplementIDEIValue(ContextInfo contextInfo, INamedTypeSymbol classSymbol) =>
             !contextInfo.IsWinUI && AttributeHelper.GetPropertyActualValue(classSymbol, contextInfo.Dx!.ViewModelAttributeSymbol, nameofImplementIDEI, false);
@@ -16,6 +17,12 @@ namespace DevExpress.Mvvm.CodeGenerators {
             AttributeHelper.GetPropertyActualValue(classSymbol, contextInfo.GetFrameworkAttributes(mvvm).ViewModelAttributeSymbol, nameofImplementISPVM, false);
         public static bool GetImplementISSValue(ContextInfo contextInfo, INamedTypeSymbol classSymbol) =>
             AttributeHelper.GetPropertyActualValue(classSymbol, contextInfo.Dx!.ViewModelAttributeSymbol, nameofImplementISS, false);
+
+
+        public static bool GetImplementDQValue(ContextInfo contextInfo, INamedTypeSymbol classSymbol) =>
+            AttributeHelper.GetPropertyActualValue(classSymbol, contextInfo.Dx!.ViewModelAttributeSymbol, nameofImplementDQ, false);
+
+
         public static bool GetImplementIAAValue(ContextInfo contextInfo, INamedTypeSymbol classSymbol) =>
             AttributeHelper.GetPropertyActualValue(classSymbol, contextInfo.Prism!.ViewModelAttributeSymbol, nameofImplementIAA, false);
         public static bool GetImplementICUValue(ContextInfo contextInfo, INamedTypeSymbol classSymbol) =>

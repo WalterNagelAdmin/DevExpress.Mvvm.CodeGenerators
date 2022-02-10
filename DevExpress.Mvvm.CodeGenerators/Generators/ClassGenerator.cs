@@ -14,17 +14,18 @@ using System.ComponentModel;";
         public static void GenerateSourceCode(SourceBuilder source, ContextInfo contextInfo, INamedTypeSymbol classSymbol, SupportedMvvm mvvm) {
             List<IInterfaceGenerator> interfaces = new();
 
-            INPCInfo inpcedInfo = INPCInfo.GetINPCedInfo(contextInfo, classSymbol, mvvm);
+            AddAvailableInterfaces(interfaces, contextInfo, classSymbol, mvvm);
+            bool generateDQ = ClassHelper.GetImplementDQValue(contextInfo, classSymbol);
+            INPCInfo inpcedInfo = INPCInfo.GetINPCedInfo(contextInfo, classSymbol, mvvm, generateDQ);
             if(inpcedInfo.HasNoImplementation())
                 interfaces.Add(new INPCedInterfaceGenerator());
             bool impelementRaiseChangedMethod = inpcedInfo.ShouldImplementRaiseMethod();
 
-            INPCInfo inpcingInfo = INPCInfo.GetINPCingInfo(contextInfo, classSymbol, mvvm);
+            INPCInfo inpcingInfo = INPCInfo.GetINPCingInfo(contextInfo, classSymbol, mvvm, generateDQ);
             if(inpcingInfo.HasNoImplementation())
                 interfaces.Add(new INPCingInterfaceGenerator());
             bool impelementRaiseChangingMethod = inpcingInfo.ShouldImplementRaiseMethod();
 
-            AddAvailableInterfaces(interfaces, contextInfo, classSymbol, mvvm);
 
             List<ITypeSymbol> genericTypes = new();
             if(classSymbol.IsGenericType) {
@@ -36,7 +37,7 @@ using System.ComponentModel;";
             source = GenerateHeader(source, classSymbol, interfaces,
                 impelementRaiseChangedMethod ? inpcedInfo.RaiseMethodImplementation : null,
                 impelementRaiseChangingMethod ? inpcingInfo.RaiseMethodImplementation : null,
-                genericTypes, outerClasses, mvvm, contextInfo.Compilation);
+                genericTypes, outerClasses, mvvm, contextInfo.Compilation, generateDQ);
 
 
             bool needStaticChangedEventArgs = inpcedInfo.HasRaiseMethodWithEventArgsParameter || impelementRaiseChangedMethod;
@@ -49,12 +50,16 @@ using System.ComponentModel;";
 
             while(source.Return != null)
                 source = source.Return.AppendLine("}");
-            static SourceBuilder GenerateHeader(SourceBuilder source, INamedTypeSymbol classSymbol, List<IInterfaceGenerator> interfaces, string? raiseChangedMethod, string? raiseChangingMethod, List<ITypeSymbol> genericTypes, Dictionary<string, TypeKind> outerClasses, SupportedMvvm actualMvvm, Compilation compilation) {
+
+            static SourceBuilder GenerateHeader(SourceBuilder source, INamedTypeSymbol classSymbol, List<IInterfaceGenerator> interfaces, string? raiseChangedMethod, string? raiseChangingMethod, List<ITypeSymbol> genericTypes, Dictionary<string, TypeKind> outerClasses, SupportedMvvm actualMvvm, Compilation compilation, bool generateDQ) {
                 source.AppendLine(defaultUsings);
-                switch(actualMvvm) {
+                if (generateDQ)
+                {
+                    source.AppendLine("using Microsoft.UI.Dispatching;");
+                }
+                switch (actualMvvm) {
                     case SupportedMvvm.Dx:
                         source.AppendLine("using DevExpress.Mvvm;");
-                        source.AppendLine("using Microsoft.UI.Dispatching;");
                         break;
                     case SupportedMvvm.Prism:
                         source.AppendLine("using System;").AppendLine("using Prism;").AppendLine("using Prism.Commands;");
@@ -98,7 +103,7 @@ using System.ComponentModel;";
                 } else
                     source.AppendLine(" {");
                 source = source.Tab;
-                const string protectedModifier = "";
+                const string protectedModifier = "protected";
                 bool isSealed = classSymbol.IsSealed;
                 if(!string.IsNullOrEmpty(raiseChangedMethod))
                     source.AppendIf(!isSealed, protectedModifier)

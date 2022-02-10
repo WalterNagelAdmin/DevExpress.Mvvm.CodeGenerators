@@ -12,40 +12,49 @@ namespace DevExpress.Mvvm.CodeGenerators {
         public bool HasRaiseMethodWithStringParameter { get; }
         public string RaiseMethodImplementation { get; }
 
-        public static INPCInfo GetINPCedInfo(ContextInfo info, INamedTypeSymbol classSymbol, SupportedMvvm mvvm) =>
-            new INPCInfo(classSymbol,
+        public static INPCInfo GetINPCedInfo(ContextInfo info, INamedTypeSymbol classSymbol, SupportedMvvm mvvm, bool createDispatcherQueue)
+        {
+            string invoke = "PropertyChanged?.Invoke(this, e);";
+            if (createDispatcherQueue)
+            {
+                invoke = @"_ = dispatcherQueue.TryEnqueue(() => PropertyChanged?.Invoke(this, e));
+/// Used to execute code in GUI Thread
+/// </summary>
+protected readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();";
+            }
+
+            return new INPCInfo(classSymbol,
                          info.INPCedSymbol,
                          symbol => AttributeHelper.HasAttribute(symbol, info.GetFrameworkAttributes(mvvm).ViewModelAttributeSymbol),
                          "RaisePropertyChanged",
                          "System.ComponentModel.PropertyChangedEventArgs",
-                         @"/// <summary>
+                         @"
+void RaisePropertyChanged(PropertyChangedEventArgs e) => " + invoke
+                         );
+            
+        }
+            
+        public static INPCInfo GetINPCingInfo(ContextInfo info, INamedTypeSymbol classSymbol, SupportedMvvm mvvm, bool createDispatcherQueue)
+        {
+            string invoke = "PropertyChanged?.Invoke(this, e);";
+            if (createDispatcherQueue)
+            {
+                invoke = @"_ = dispatcherQueue.TryEnqueue(() => PropertyChanged?.Invoke(this, e));
 /// Used to execute code in GUI Thread
 /// </summary>
-protected readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-/// <summary>
-/// Execute RaisePropertyChanged in GUI Thread
-/// </summary>
-/// <param name=""e""></param>
-protected void RaisePropertyChanged(PropertyChangedEventArgs e) => _ = dispatcherQueue.TryEnqueue(() => PropertyChanged?.Invoke(this, e));
-                            "
-                         );
-        public static INPCInfo GetINPCingInfo(ContextInfo info, INamedTypeSymbol classSymbol, SupportedMvvm mvvm) =>
-            new INPCInfo(classSymbol,
+protected readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();";
+            }
+
+            return new INPCInfo(classSymbol,
                          info.INPCingSymbol,
                          symbol => AttributeHelper.HasAttribute(symbol, info.GetFrameworkAttributes(mvvm).ViewModelAttributeSymbol) &&
                                    AttributeHelper.GetPropertyActualValue(symbol, info.GetFrameworkAttributes(mvvm).ViewModelAttributeSymbol, AttributesGenerator.ImplementINPCing, false),
                          "RaisePropertyChanging",
                          "System.ComponentModel.PropertyChangingEventArgs",
-                         @"/// <summary>
-/// Used to execute code in GUI Thread
-/// </summary>
-private readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();
-/// <summary>
-/// Execute RaisePropertyChanged in GUI Thread
-/// </summary>
-/// <param name=""e""></param>
-void RaisePropertyChanging(PropertyChangingEventArgs e) => _ = dispatcherQueue.TryEnqueue(() PropertyChanging?.Invoke(this, e));
-                            ");
+                         @"
+void RaisePropertyChanging(PropertyChangingEventArgs e) => "+invoke
+                            );
+        }
 
         public bool HasNoImplementation() =>
             HasAttribute && !hasImplementation;

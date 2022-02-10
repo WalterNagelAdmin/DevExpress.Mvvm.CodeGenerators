@@ -1,11 +1,10 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 
 namespace DevExpress.Mvvm.CodeGenerators {
     interface IInterfaceGenerator {
         string GetName();
         void AppendImplementation(SourceBuilder source);
     }
-
     class INPCedInterfaceGenerator : IInterfaceGenerator {
         public string GetName() => nameof(INotifyPropertyChanged);
         public void AppendImplementation(SourceBuilder source) =>
