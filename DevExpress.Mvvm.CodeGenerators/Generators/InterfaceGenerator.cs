@@ -1,31 +1,98 @@
 using System.ComponentModel;
 
-namespace DevExpress.Mvvm.CodeGenerators {
-    interface IInterfaceGenerator {
-        string GetName();
+namespace DevExpress.Mvvm.CodeGenerators
+{
+    internal interface IInterfaceGenerator
+    {
         void AppendImplementation(SourceBuilder source);
+
+        string GetName();
     }
-    class INPCedInterfaceGenerator : IInterfaceGenerator {
-        public string GetName() => nameof(INotifyPropertyChanged);
+
+    internal class IActiveAwareGenerator : IInterfaceGenerator
+    {
+        private readonly bool generateChangedMethod;
+
+        public IActiveAwareGenerator(bool shouldGenerateChangedMethod) => generateChangedMethod = shouldGenerateChangedMethod;
+
+        public void AppendImplementation(SourceBuilder source)
+        {
+            source.AppendMultipleLines(@"bool isActive;
+public bool IsActive {
+    get => isActive;
+    set {
+        isActive = value;");
+            if (generateChangedMethod)
+                source.AppendLine("        OnIsActiveChanged();");
+            source.AppendMultipleLines(
+@"        IsActiveChanged?.Invoke(this, EventArgs.Empty);
+    }
+}
+public event EventHandler? IsActiveChanged;");
+        }
+
+        public string GetName() => "IActiveAware";
+    }
+
+    internal class ICleanupGenerator : IInterfaceGenerator
+    {
+        private readonly bool generateOnCleanupMethod;
+        private readonly bool isSealed;
+
+        public ICleanupGenerator(bool shouldGenerateOnCleanupMethod, bool isSealed)
+        {
+            generateOnCleanupMethod = shouldGenerateOnCleanupMethod;
+            this.isSealed = isSealed;
+        }
+
+        public void AppendImplementation(SourceBuilder source)
+        {
+            source.AppendIf(!isSealed, "protected ")
+                  .AppendMultipleLines(@"IMessenger MessengerInstance { get; set; } = Messenger.Default;
+public virtual void Cleanup() {
+    MessengerInstance.Unregister(this);");
+            if (generateOnCleanupMethod)
+                source.AppendLine("    OnCleanup();");
+            source.AppendLine("}");
+        }
+
+        public string GetName() => "ICleanup";
+    }
+
+    internal class IDataErrorInfoGenerator : IInterfaceGenerator
+    {
+        private const string Implementation = @"string IDataErrorInfo.Error { get => string.Empty; }
+string IDataErrorInfo.this[string columnName] { get => IDataErrorInfoHelper.GetErrorText(this, columnName); }";
+
+        public void AppendImplementation(SourceBuilder source) => source.AppendMultipleLines(Implementation);
+
+        public string GetName() => nameof(IDataErrorInfo);
+    }
+
+    internal class INPCedInterfaceGenerator : IInterfaceGenerator
+    {
         public void AppendImplementation(SourceBuilder source) =>
             source.AppendLine("public event PropertyChangedEventHandler? PropertyChanged;");
+
+        public string GetName() => nameof(INotifyPropertyChanged);
     }
-    class INPCingInterfaceGenerator : IInterfaceGenerator {
-        public string GetName() => nameof(INotifyPropertyChanging);
+
+    internal class INPCingInterfaceGenerator : IInterfaceGenerator
+    {
         public void AppendImplementation(SourceBuilder source) =>
             source.AppendLine("public event PropertyChangingEventHandler? PropertyChanging;");
+
+        public string GetName() => nameof(INotifyPropertyChanging);
     }
-    class IDataErrorInfoGenerator : IInterfaceGenerator {
-        const string Implementation = @"string IDataErrorInfo.Error { get => string.Empty; }
-string IDataErrorInfo.this[string columnName] { get => IDataErrorInfoHelper.GetErrorText(this, columnName); }";
-        public string GetName() => nameof(IDataErrorInfo);
-        public void AppendImplementation(SourceBuilder source) => source.AppendMultipleLines(Implementation);
-    }
-    class ISupportParentViewModelGenerator : IInterfaceGenerator {
-        readonly bool generateChangedMethod;
+
+    internal class ISupportParentViewModelGenerator : IInterfaceGenerator
+    {
+        private readonly bool generateChangedMethod;
+
         public ISupportParentViewModelGenerator(bool shouldGenerateChangedMethod) => generateChangedMethod = shouldGenerateChangedMethod;
-        public string GetName() => "ISupportParentViewModel";
-        public void AppendImplementation(SourceBuilder source) {
+
+        public void AppendImplementation(SourceBuilder source)
+        {
             source.AppendMultipleLines(@"object? parentViewModel;
 public object? ParentViewModel {
     get { return parentViewModel; }
@@ -35,19 +102,25 @@ public object? ParentViewModel {
         if(value == this)
             throw new System.InvalidOperationException(""ViewModel cannot be parent of itself."");
         parentViewModel = value;");
-            if(generateChangedMethod)
+            if (generateChangedMethod)
                 source.AppendLine("        OnParentViewModelChanged(parentViewModel);");
             source.AppendMultipleLines(
 @"    }
 }");
         }
+
+        public string GetName() => "ISupportParentViewModel";
     }
-    class ISupportServicesGenerator : IInterfaceGenerator {
-        const string protectedModifier = "protected ";
-        readonly bool isSealed;
+
+    internal class ISupportServicesGenerator : IInterfaceGenerator
+    {
+        private const string protectedModifier = "protected ";
+        private readonly bool isSealed;
+
         public ISupportServicesGenerator(bool isSealed) => this.isSealed = isSealed;
-        public string GetName() => "ISupportServices";
-        public void AppendImplementation(SourceBuilder source) {
+
+        public void AppendImplementation(SourceBuilder source)
+        {
             source.AppendLine("IServiceContainer? serviceContainer;")
                   .AppendIf(!isSealed, protectedModifier)
                   .AppendMultipleLines(@"IServiceContainer ServiceContainer { get => serviceContainer ??= new ServiceContainer(this); }
@@ -57,42 +130,7 @@ IServiceContainer ISupportServices.ServiceContainer { get => ServiceContainer; }
                   .AppendIf(!isSealed, protectedModifier)
                   .AppendLine("T? GetRequiredService<T>() where T : class => ServiceContainer.GetRequiredService<T>();");
         }
-    }
-    class IActiveAwareGenerator : IInterfaceGenerator {
-        readonly bool generateChangedMethod;
-        public IActiveAwareGenerator(bool shouldGenerateChangedMethod) => generateChangedMethod = shouldGenerateChangedMethod;
-        public string GetName() => "IActiveAware";
-        public void AppendImplementation(SourceBuilder source) {
-            source.AppendMultipleLines(@"bool isActive;
-public bool IsActive {
-    get => isActive;
-    set {
-        isActive = value;");
-            if(generateChangedMethod)
-                source.AppendLine("        OnIsActiveChanged();");
-            source.AppendMultipleLines(
-@"        IsActiveChanged?.Invoke(this, EventArgs.Empty);
-    }
-}
-public event EventHandler? IsActiveChanged;");
-        }
-    }
-    class ICleanupGenerator : IInterfaceGenerator {
-        readonly bool generateOnCleanupMethod;
-        readonly bool isSealed;
-        public ICleanupGenerator(bool shouldGenerateOnCleanupMethod, bool isSealed) {
-            generateOnCleanupMethod = shouldGenerateOnCleanupMethod;
-            this.isSealed = isSealed;
-            }
-        public string GetName() => "ICleanup";
-        public void AppendImplementation(SourceBuilder source) {
-            source.AppendIf(!isSealed, "protected ")
-                  .AppendMultipleLines(@"IMessenger MessengerInstance { get; set; } = Messenger.Default;
-public virtual void Cleanup() {
-    MessengerInstance.Unregister(this);");
-            if(generateOnCleanupMethod)
-                source.AppendLine("    OnCleanup();");
-            source.AppendLine("}");
-        }
+
+        public string GetName() => "ISupportServices";
     }
 }

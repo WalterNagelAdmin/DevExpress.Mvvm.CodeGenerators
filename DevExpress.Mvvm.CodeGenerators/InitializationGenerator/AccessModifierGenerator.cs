@@ -1,7 +1,9 @@
-﻿using System;
+using System;
 
-namespace DevExpress.Mvvm.CodeGenerators {
-    enum AccessModifier {
+namespace DevExpress.Mvvm.CodeGenerators
+{
+    internal enum AccessModifier
+    {
         Public,
         Private,
         Protected,
@@ -9,18 +11,12 @@ namespace DevExpress.Mvvm.CodeGenerators {
         ProtectedInternal,
         PrivateProtected,
     };
-    static class AccessModifierGenerator {
-        public static string GetSourceCode() =>
-$@"    enum AccessModifier {{
-        Public,
-        Private,
-        Protected,
-        Internal,
-        ProtectedInternal,
-        PrivateProtected,
-    }}";
+
+    internal static class AccessModifierGenerator
+    {
         public static string GetCodeRepresentation(AccessModifier modifier) =>
-            modifier switch {
+            modifier switch
+            {
                 AccessModifier.Public => string.Empty,
                 AccessModifier.Private => "private ",
                 AccessModifier.Protected => "protected ",
@@ -29,5 +25,15 @@ $@"    enum AccessModifier {{
                 AccessModifier.PrivateProtected => "private protected ",
                 _ => throw new InvalidOperationException(),
             };
+
+        public static string GetSourceCode() =>
+        $@"    enum AccessModifier {{
+        Public,
+        Private,
+        Protected,
+        Internal,
+        ProtectedInternal,
+        PrivateProtected,
+    }}";
     }
 }
