@@ -13,7 +13,8 @@ namespace DevExpress.Mvvm.CodeGenerators
     {
         private const string defaultUsings =
 @"using System.Collections.Generic;
-using System.ComponentModel;";
+using System.ComponentModel;
+";
 
         public static void GenerateSourceCode(SourceBuilder source, ContextInfo contextInfo, INamedTypeSymbol classSymbol, SupportedMvvm mvvm)
         {
@@ -61,6 +62,7 @@ using System.ComponentModel;";
                 if (generateDQ)
                 {
                     source.AppendLine("using Microsoft.UI.Dispatching;");
+                    source.AppendLine("using WN.GUI.Views;");
                 }
                 switch (actualMvvm)
                 {

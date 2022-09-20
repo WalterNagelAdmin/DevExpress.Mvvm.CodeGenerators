@@ -54,7 +54,7 @@ namespace DevExpress.Mvvm.CodeGenerators
                 invoke = @"_ = dispatcherQueue.TryEnqueue(() => PropertyChanged?.Invoke(this, e));
 /// Used to execute code in GUI Thread
 /// </summary>
-protected readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();";
+protected readonly DispatcherQueue dispatcherQueue = MainWindow.DispatcherQueue;";
             }
 
             return new INPCInfo(classSymbol,
@@ -75,7 +75,7 @@ void RaisePropertyChanged(PropertyChangedEventArgs e) => " + invoke
                 invoke = @"_ = dispatcherQueue.TryEnqueue(() => PropertyChanged?.Invoke(this, e));
 /// Used to execute code in GUI Thread
 /// </summary>
-protected readonly DispatcherQueue dispatcherQueue = DispatcherQueue.GetForCurrentThread();";
+protected readonly DispatcherQueue dispatcherQueue = MainWindow.DispatcherQueue;";
             }
 
             return new INPCInfo(classSymbol,
