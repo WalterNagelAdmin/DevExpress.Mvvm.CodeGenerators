@@ -12,7 +12,9 @@ namespace DevExpress.Mvvm.CodeGenerators
     internal static class ClassGenerator
     {
         private const string defaultUsings =
-@"using System.Collections.Generic;
+@"
+#pragma warning disable
+using System.Collections.Generic;
 using System.ComponentModel;
 ";
 
